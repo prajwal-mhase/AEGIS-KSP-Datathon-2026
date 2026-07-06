@@ -1,0 +1,179 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgcrypto, vector]
+}
+
+enum Role {
+  OFFICER
+  INSPECTOR
+  SP
+  ANALYST
+  ADMIN
+}
+
+enum CrimeCategory {
+  THEFT
+  ASSAULT
+  CYBERCRIME
+  NARCOTICS
+  TRAFFIC
+  FRAUD
+  PUBLIC_ORDER
+  WOMEN_CHILD_SAFETY
+  OTHER
+}
+
+enum CrimeSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  OPEN
+  UNDER_INVESTIGATION
+  CHARGESHEETED
+  CLOSED
+}
+
+model User {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  email         String         @unique
+  passwordHash  String
+  role          Role
+  district      String?
+  station       String?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
+  conversations Conversation[]
+  reports       ScheduledReport[]
+}
+
+model RefreshToken {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenHash   String    @unique
+  userId      String    @db.Uuid
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  replacedBy  String?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, expiresAt])
+}
+
+model CrimeIncident {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firNumber     String         @unique
+  title         String
+  description   String
+  category      CrimeCategory
+  severity      CrimeSeverity
+  status        IncidentStatus @default(OPEN)
+  district      String
+  station       String
+  latitude      Decimal        @db.Decimal(10, 7)
+  longitude     Decimal        @db.Decimal(10, 7)
+  occurredAt    DateTime
+  reportedAt    DateTime       @default(now())
+  complainant   String?
+  accused       String?
+  investigatingOfficer String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([district, station])
+  @@index([category, severity])
+  @@index([occurredAt])
+}
+
+model KnowledgeDocument {
+  id        String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title     String
+  source    String
+  chunks    DocumentChunk[]
+  createdAt DateTime        @default(now())
+}
+
+model DocumentChunk {
+  id          String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  documentId  String            @db.Uuid
+  document    KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  content     String
+  embedding   Unsupported("vector(1536)")?
+  metadata    Json
+  createdAt   DateTime          @default(now())
+}
+
+model Conversation {
+  id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String        @db.Uuid
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  messages  ChatMessage[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model ChatMessage {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversationId String       @db.Uuid
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String
+  sql            String?
+  confidence     Float?
+  citations      Json?
+  createdAt      DateTime     @default(now())
+}
+
+model ScheduledReport {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  cron      String
+  filters   Json
+  recipients String[]
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title     String
+  body      String
+  severity  String
+  role      Role?
+  district  String?
+  readBy    String[] @default([])
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String?  @db.Uuid
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  ipAddress String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}

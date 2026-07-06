@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+.pnpm-store
+.npm
+.yarn
+
+# Build output
+dist
+build
+coverage
+.vite
+.turbo
+*.tsbuildinfo
+.eslintcache
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Test artifacts
+playwright-report
+test-results
+
+# Prisma local database artifacts
+server/prisma/dev.db
+server/prisma/dev.db-journal
+
+# OS files
+.DS_Store
+Thumbs.db
