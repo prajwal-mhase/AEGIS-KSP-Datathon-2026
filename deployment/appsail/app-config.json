@@ -1,0 +1,14 @@
+{
+  "command": "npm start",
+  "build_path": ".",
+  "stack": "node22",
+  "env_variables": {
+    "NODE_ENV": "production"
+  },
+  "memory": 512,
+  "scripts": {
+    "build": "npm install && npm run build",
+    "start": "npm start"
+  },
+  "platform": "node"
+}

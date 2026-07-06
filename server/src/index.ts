@@ -6,7 +6,7 @@ import { prisma } from './lib/prisma.js';
 const app = createApp();
 
 const server = app.listen(env.PORT, () => {
-  logger.info({ port: env.PORT }, 'AEGIS API listening');
+  logger.info({ port: env.PORT, listenAddress: '0.0.0.0' }, 'AEGIS API listening');
 });
 
 const shutdown = async () => {

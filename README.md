@@ -174,6 +174,8 @@ For a strong submission, capture the app after seeding data and logging in as th
 
 AEGIS turns raw incident data into an operational command center with evidence-backed AI, geospatial analysis, and deployable infrastructure. It is built to be demoed locally, pushed to GitHub cleanly, and deployed with minimal extra setup.
 
+For Zoho Catalyst deployment details, see [DEPLOYMENT.md](./DEPLOYMENT.md) and the helper scripts under [scripts/](./scripts).
+
 ## License
 
 Copyright 2026. Internal government and authorized evaluation use unless a separate license is issued.

@@ -1,0 +1,7 @@
+{
+  "build_command": "npm install && npm run build --workspace client",
+  "output_path": "client/dist",
+  "base_path": "/",
+  "api_base_env": "VITE_API_BASE_URL",
+  "spa_fallback": true
+}
