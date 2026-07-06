@@ -128,21 +128,33 @@ All protected endpoints require `Authorization: Bearer <accessToken>`.
 
 ## Deployment
 
-AEGIS is deployment-ready for GitHub-based delivery using Docker images and GitHub Actions.
+AEGIS is ready for GitHub push and hackathon submission workflows. The repo already includes a CI pipeline, Docker builds, and a clear split between client, server, and shared packages.
 
-### GitHub Deployment
+### GitHub Push Ready Checklist
 
-1. Use the existing CI workflow in [.github/workflows/ci.yml](./.github/workflows/ci.yml) as the validation gate for `main` and pull requests.
-2. Store production secrets in GitHub repository secrets:
+1. Create a GitHub repository and push the full workspace, including [client/](./client), [server/](./server), [shared/](./shared), [docker/](./docker), and [.github/workflows/ci.yml](./.github/workflows/ci.yml).
+2. Confirm the project builds locally before pushing:
+   - `npm install`
+   - `npm run build`
+   - `npm run lint`
+   - `npm test`
+3. Keep secrets out of the repo and define them in GitHub repository secrets:
    - `DATABASE_URL`
    - `JWT_ACCESS_SECRET`
    - `JWT_REFRESH_SECRET`
    - `CLIENT_ORIGIN`
-   - `OPENAI_API_KEY` if you want hosted AI generation
-3. Build the server image from [docker/server.Dockerfile](./docker/server.Dockerfile) and the client image from [docker/client.Dockerfile](./docker/client.Dockerfile).
-4. Publish the images to GitHub Container Registry or another container registry from a GitHub Actions release workflow.
-5. Run Prisma migrations during the deployment step before starting the API.
-6. Serve the client through the nginx container or a static host that points to the deployed API origin.
+   - `OPENAI_API_KEY` if hosted AI generation is enabled
+4. Use the GitHub Actions workflow as the push gate for pull requests and `main`.
+5. Build and publish container images from the Dockerfiles in [docker/server.Dockerfile](./docker/server.Dockerfile) and [docker/client.Dockerfile](./docker/client.Dockerfile).
+6. Run Prisma migrations during deployment before starting the API.
+7. Point the client to the deployed API origin and serve the UI through nginx or a static host.
+
+### Hackathon Submission Notes
+
+1. Include a short project summary in the GitHub repository description.
+2. Add sample credentials or a seed-data note in this README so judges can run the demo quickly.
+3. Link the live demo, if available, in the repository README and submission form.
+4. Keep the default seeded admin credential documented here for local demo use only, and rotate it before any public deployment.
 
 ### Zoho Catalyst
 
