@@ -1,110 +1,138 @@
-# AEGIS — Smart Unified Threat & Response Analytics
+# AEGIS
 
-AEGIS is an AI-powered conversational intelligence and crime analytics platform for the Karnataka State Police Crime Database. It combines verified SQL-backed answers, RBAC-secured workflows, interactive GIS visualization, trend analytics, citations, confidence scoring, scheduled reports, and auditability in one operational command center.
+AEGIS is a hackathon-ready crime intelligence and response analytics platform built for a real-world command-center demo. It combines authenticated dashboards, GIS visualization, verified analytics, report workflows, and an AI assistant that stays grounded in database-backed evidence.
 
-## Architecture
+## Why This Project Wins Demos
+
+- One login opens a full command center instead of a static landing page.
+- The assistant answers from structured data and can fall back to local evidence when hosted AI is unavailable.
+- The dashboard shows operational value immediately through KPIs, trends, incidents, and geographic patterns.
+- The repo is already split for deployment: web, API, shared contracts, Docker images, and GitHub Actions CI.
+
+## What's Inside
 
 ```text
-client/          React + TypeScript + Vite command center
-server/          Express + TypeScript API, auth, analytics, AI orchestration
-shared/          Zod contracts and shared TypeScript types
-docker/          PostgreSQL pgvector, API, web images
-docs/            Architecture and deployment notes
-.github/         CI build, lint, and test workflow
+client/    React + TypeScript + Vite web app
+server/    Express + TypeScript API, auth, analytics, AI, reports
+shared/    Zod schemas and API types shared by both apps
+docker/    Dockerfiles, compose file, and nginx config
+.github/   GitHub Actions CI workflow
+docs/      Architecture notes
 ```
 
-The backend follows feature-based modules. Requests pass through request IDs, structured logging, Helmet, CORS, compression, rate limiting, JWT verification, Zod validation, service-layer business logic, and Prisma persistence. AI chat uses deterministic intent/entity extraction, validated database retrieval, optional OpenAI-compatible answer generation, citations, confidence scoring, and persisted conversation history.
+The backend uses feature-based modules with request IDs, structured logging, security middleware, Zod validation, Prisma persistence, and an OpenAI-compatible AI layer. The frontend uses React, TypeScript, Vite, Tailwind CSS, React Router, TanStack Query, Zustand, Leaflet, and Recharts.
 
-## Features
+## Core Features
 
-- JWT authentication with rotating refresh tokens and RBAC roles: Officer, Inspector, SP, Analyst, Admin
-- Crime dashboard with KPIs, category distribution, trend analysis, recent FIRs, and district filters
-- Conversational assistant with SQL evidence, citations, confidence score, follow-up questions, markdown rendering, and export
-- GIS map with incident markers and severity-weighted visualization
-- Analytics workbench for trend, category, district, station, and hotspot analysis
-- Scheduled report creation with recipient validation
-- Admin users and audit log views
-- Prisma PostgreSQL schema with pgvector-ready RAG document chunks
-- Docker Compose for PostgreSQL, API, and web runtime
-- GitHub Actions CI for install, build, lint, and test
+- JWT authentication with refresh tokens and role-based access control
+- Command-center dashboard with filters, KPIs, crime trends, and recent records
+- AI assistant for investigative queries with evidence-backed responses
+- Interactive map view for spatial incident analysis
+- Analytics pages for categories, trends, and geographic patterns
+- Scheduled reports and admin views for operational oversight
+- Shared API contracts to keep client and server in sync
 
 ## Tech Stack
 
-Frontend: React, TypeScript, Vite, Tailwind CSS, TanStack Query, React Router, Zustand, React Hook Form, Zod, Leaflet, Recharts.
+Frontend: React 19, TypeScript, Vite, Tailwind CSS, React Router, TanStack Query, Zustand, React Hook Form, Zod, Leaflet, Recharts.
 
-Backend: Node.js, Express, TypeScript, Prisma ORM, PostgreSQL, pgvector, JWT, Argon2, OpenAI-compatible provider abstraction.
+Backend: Node.js 20+, Express, TypeScript, Prisma ORM, PostgreSQL, pgvector, JWT, Argon2, OpenAI-compatible provider abstraction.
 
-## Local Development
+## Quick Start
+
+### 1. Install
 
 ```bash
 npm install
-copy .env.example .env
-npm run build
-npm run lint
-npm test
 ```
 
-Start PostgreSQL:
+### 2. Configure environment variables
 
-```bash
-docker compose -f docker/docker-compose.yml up postgres -d
-```
+Copy [.env.example](./.env.example) to `.env` and fill in the required values.
 
-Run migrations and seed data:
-
-```bash
-npm run prisma:migrate --workspace server
-npm run prisma:seed --workspace server
-```
-
-Start the API and client:
-
-```bash
-npm run dev:server
-npm run dev:client
-```
-
-Default seeded administrator:
-
-```text
-email: admin@aegis.local
-password: AegisAdmin!2026
-```
-
-Rotate this credential before any shared or production deployment.
-
-## Environment Variables
-
-See [.env.example](./.env.example).
-
-Required:
+Required values:
 
 - `DATABASE_URL`
 - `JWT_ACCESS_SECRET`
 - `JWT_REFRESH_SECRET`
 - `CLIENT_ORIGIN`
 
-Optional AI configuration:
+Optional AI values:
 
 - `OPENAI_API_KEY`
 - `OPENAI_BASE_URL`
 - `OPENAI_MODEL`
 
-When no AI key is configured, AEGIS still answers using the local evidence provider over verified database results. It does not fabricate records.
+### 3. Start PostgreSQL
 
-## Docker
+```bash
+docker compose -f docker/docker-compose.yml up postgres -d
+```
+
+### 4. Run migrations and seed data
+
+```bash
+npm run prisma:migrate --workspace server
+npm run prisma:seed --workspace server
+```
+
+### 5. Start the apps
+
+```bash
+npm run dev:server
+npm run dev:client
+```
+
+If you want the root server start command only, use `npm run dev`.
+
+## Local Demo Credentials
+
+Seeded admin account:
+
+```text
+email: admin@aegis.local
+password: AegisAdmin!2026
+```
+
+Use this only for local demo and judge walkthroughs. Rotate or replace it before any public deployment.
+
+## Docker Run
+
+Bring up the full stack with one command:
 
 ```bash
 docker compose -f docker/docker-compose.yml up --build
 ```
 
-Services:
+Expected services:
 
-- Web: `http://localhost:5173`
-- API: `http://localhost:8080`
-- PostgreSQL: `localhost:5432`
+- Web: http://localhost:5173
+- API: http://localhost:8080
+- PostgreSQL: localhost:5432
 
-## API Overview
+## GitHub Deployment Ready
+
+This repo is already set up for GitHub push workflows and hackathon submission:
+
+1. Push the full monorepo to GitHub, including [client/](./client), [server/](./server), [shared/](./shared), [docker/](./docker), and [.github/workflows/ci.yml](./.github/workflows/ci.yml).
+2. Keep secrets out of the repo and store them in GitHub repository secrets.
+3. Use the existing GitHub Actions workflow as the gate for `main` and pull requests.
+4. Build the deployable images from [docker/server.Dockerfile](./docker/server.Dockerfile) and [docker/client.Dockerfile](./docker/client.Dockerfile).
+5. Run Prisma migrations before starting the API in your deployment job or release step.
+6. Point the client at the deployed API origin through environment variables.
+7. Serve the web app through nginx or another static host behind the published client image.
+
+Suggested GitHub secrets:
+
+- `DATABASE_URL`
+- `JWT_ACCESS_SECRET`
+- `JWT_REFRESH_SECRET`
+- `CLIENT_ORIGIN`
+- `OPENAI_API_KEY` if hosted AI is enabled
+
+The CI workflow currently runs install, build, lint, and tests on push and pull request events.
+
+## API Surface
 
 - `GET /health`
 - `POST /api/auth/login`
@@ -124,73 +152,27 @@ Services:
 - `GET /api/admin/users`
 - `GET /api/admin/audit-logs`
 
-All protected endpoints require `Authorization: Bearer <accessToken>`.
-
-## Deployment
-
-AEGIS is ready for GitHub push and hackathon submission workflows. The repo already includes a CI pipeline, Docker builds, and a clear split between client, server, and shared packages.
-
-### GitHub Push Ready Checklist
-
-1. Create a GitHub repository and push the full workspace, including [client/](./client), [server/](./server), [shared/](./shared), [docker/](./docker), and [.github/workflows/ci.yml](./.github/workflows/ci.yml).
-2. Confirm the project builds locally before pushing:
-   - `npm install`
-   - `npm run build`
-   - `npm run lint`
-   - `npm test`
-3. Keep secrets out of the repo and define them in GitHub repository secrets:
-   - `DATABASE_URL`
-   - `JWT_ACCESS_SECRET`
-   - `JWT_REFRESH_SECRET`
-   - `CLIENT_ORIGIN`
-   - `OPENAI_API_KEY` if hosted AI generation is enabled
-4. Use the GitHub Actions workflow as the push gate for pull requests and `main`.
-5. Build and publish container images from the Dockerfiles in [docker/server.Dockerfile](./docker/server.Dockerfile) and [docker/client.Dockerfile](./docker/client.Dockerfile).
-6. Run Prisma migrations during deployment before starting the API.
-7. Point the client to the deployed API origin and serve the UI through nginx or a static host.
-
-### Hackathon Submission Notes
-
-1. Include a short project summary in the GitHub repository description.
-2. Add sample credentials or a seed-data note in this README so judges can run the demo quickly.
-3. Link the live demo, if available, in the repository README and submission form.
-4. Keep the default seeded admin credential documented here for local demo use only, and rotate it before any public deployment.
-
-### Zoho Catalyst
-
-If you are deploying to Zoho Catalyst AppSail instead of GitHub-hosted infrastructure:
-
-1. Build the server image from [docker/server.Dockerfile](./docker/server.Dockerfile).
-2. Configure environment variables in Catalyst secrets.
-3. Provision PostgreSQL with pgvector support or map compatible storage through Catalyst services.
-4. Run Prisma migrations as a release step.
-5. Serve the client from Catalyst static hosting or the nginx image from [docker/client.Dockerfile](./docker/client.Dockerfile).
+Protected routes require `Authorization: Bearer <accessToken>`.
 
 ## Verification
 
-Current verification completed locally:
+Use these commands before pushing to GitHub or submitting the hackathon entry:
 
 ```bash
 npm run build
 npm run lint
 npm test
-npm audit --omit=dev
 ```
 
-Production dependency audit reports zero vulnerabilities. Dev dependency audit still reports transitive advisories from tooling and should be reviewed during dependency governance.
+You can also run the same checks from GitHub Actions, which mirrors the repository CI pipeline.
 
-## Screenshots
+## Screenshot Guidance
 
-Run the app locally and capture the command center after seeding data. The UI is intentionally data-backed, so screenshots should be generated from a running environment with real seed records.
+For a strong submission, capture the app after seeding data and logging in as the demo admin. The product is data-driven, so screenshots should show the dashboard, map, and analytics views with real records instead of placeholders.
 
-## Roadmap
+## Suggested Hackathon Pitch
 
-- Add station boundary polygon ingestion and polygon selection workflows
-- Expand RAG ingestion pipeline for FIR narratives, SOPs, and legal references
-- Add Playwright E2E coverage for login, dashboard filters, reports, and chat
-- Add PDF report rendering service and signed export URLs
-- Add WebSocket/SSE streaming for chat token delivery and alert notifications
-- Integrate Catalyst Functions for scheduled report dispatch
+AEGIS turns raw incident data into an operational command center with evidence-backed AI, geospatial analysis, and deployable infrastructure. It is built to be demoed locally, pushed to GitHub cleanly, and deployed with minimal extra setup.
 
 ## License
 
