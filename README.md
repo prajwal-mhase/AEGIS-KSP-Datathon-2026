@@ -128,7 +128,25 @@ All protected endpoints require `Authorization: Bearer <accessToken>`.
 
 ## Deployment
 
-For Zoho Catalyst AppSail:
+AEGIS is deployment-ready for GitHub-based delivery using Docker images and GitHub Actions.
+
+### GitHub Deployment
+
+1. Use the existing CI workflow in [.github/workflows/ci.yml](./.github/workflows/ci.yml) as the validation gate for `main` and pull requests.
+2. Store production secrets in GitHub repository secrets:
+   - `DATABASE_URL`
+   - `JWT_ACCESS_SECRET`
+   - `JWT_REFRESH_SECRET`
+   - `CLIENT_ORIGIN`
+   - `OPENAI_API_KEY` if you want hosted AI generation
+3. Build the server image from [docker/server.Dockerfile](./docker/server.Dockerfile) and the client image from [docker/client.Dockerfile](./docker/client.Dockerfile).
+4. Publish the images to GitHub Container Registry or another container registry from a GitHub Actions release workflow.
+5. Run Prisma migrations during the deployment step before starting the API.
+6. Serve the client through the nginx container or a static host that points to the deployed API origin.
+
+### Zoho Catalyst
+
+If you are deploying to Zoho Catalyst AppSail instead of GitHub-hosted infrastructure:
 
 1. Build the server image from [docker/server.Dockerfile](./docker/server.Dockerfile).
 2. Configure environment variables in Catalyst secrets.
